@@ -1,0 +1,26 @@
+# --- macOS ---
+.DS_Store
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# --- MPLAB X IDE (PIC開發相關) ---
+# 忽略編譯產生的大量暫存檔，只保留原始碼
+*.X/dist/
+*.X/build/
+*.X/debug/
+*.X/nbproject/Makefile-*
+*.X/nbproject/Package-*
+*.hex
+*.cof
+*.hxl
+*.p1
+*.sdb
+*.sym
+*.obj
+*.rlf
+*.o
+*.d
