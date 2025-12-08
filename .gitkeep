@@ -1,4 +1,4 @@
-.firmware
-.firmware/src
-.python_GUI
-.docs
+firmware
+firmware/src
+python_GUI
+docs
