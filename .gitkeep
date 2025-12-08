@@ -1,2 +1,4 @@
 .firmware
+.firmware/src
 .python_GUI
+.docs
