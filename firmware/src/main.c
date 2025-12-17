@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 // Config Bits
-#pragma config OSC = INTIO67, WDT = OFF, PBADEN = OFF, LVP = OFF
+#pragma config OSC = INTIO67, WDT = OFF, PBADEN = OFF, LVP = OFF, MCLRE = OFF
 
 // Central Interrupt Manager
 void __interrupt(high_priority) Hi_ISR(void) {

@@ -1,57 +1,49 @@
 #include "config.h"
-#include "display.h"
 #include "uart.h"
-#include "inputs.h"
-#include <stdio.h>
+#include "display.h" // Needs to call Display functions
+#include <string.h>
 #include <stdlib.h>
 
-// Config Bits
-#pragma config OSC = INTIO67, WDT = OFF, PBADEN = OFF, LVP = OFF
+volatile char rx_str[10];
+volatile int rx_idx = 0;
 
-// Central Interrupt Manager
-void __interrupt(high_priority) Hi_ISR(void) {
-    UART_ISR_Handler();
-    Inputs_ISR_Handler();
-    Display_ISR_Handler();
+void UART_Init(void) {
+    TRISCbits.TRISC6 = 1; TRISCbits.TRISC7 = 1;
+    TXSTAbits.SYNC = 0; BAUDCONbits.BRG16 = 0; TXSTAbits.BRGH = 1; SPBRG = 25;      
+    RCSTAbits.SPEN = 1; TXSTAbits.TXEN = 1; RCSTAbits.CREN = 1;
+    PIE1bits.RCIE = 1; 
 }
 
-void main(void) {
-    OSCCONbits.IRCF = 0b110; // 4 MHz
+void UART_Write_Text(char *text) {
+    for(int i=0; text[i]!='\0'; i++) {
+        while(!TRMT);
+        TXREG = text[i];
+    }
+}
 
-    // Initialize Modules
-    Display_Init();
-    UART_Init();
-    Inputs_Init();
-    
-    // Enable Global Interrupts
-    INTCONbits.PEIE = 1; 
-    INTCONbits.GIE = 1;
-    
-    char buffer[30];
-    int pot_val = 0;
-    int last_pot_val = -100; 
-
-    UART_Write_Text("System Ready.\r\n");
-
-    while(1) {
-        // 1. Check Potentiometer
-        pot_val = ADC_Read();
-        if (abs(pot_val - last_pot_val) > POT_THRESHOLD) {
-            sprintf(buffer, "POT:%d\r\n", pot_val);
-            UART_Write_Text(buffer);
-            last_pot_val = pot_val; 
+void UART_ISR_Handler(void) {
+    if (PIR1bits.RCIF) {
+        char rx = RCREG;
+        
+        // Single Char Commands (LEDs)
+        if (rx == 'G' || rx == 'P' || rx == 'E' || rx == 'X') {
+            if(rx=='X'){Display_Update_Score(0);}
+            Display_Set_LED(rx);
+            rx_idx = 0; // RESET index so this char doesn't corrupt the next string
+            return;     // Stop processing this character
         }
-
-        // 2. Check Confirm Button Flag
-        if (btn_confirm_flag) {
-            UART_Write_Text("BTN:CONFIRM\r\n");
-            __delay_ms(300);
-            btn_confirm_flag = 0;
+        
+        // String Parsing (Score)
+        if (rx == '\n' || rx == '\r') {
+            rx_str[rx_idx] = '\0'; 
+            rx_idx = 0;
+            // Check matches "SCR:"
+            if (strncmp((char*)rx_str, "SCR:", 4) == 0) {
+                int new_score = atoi((char*)&rx_str[4]);
+                Display_Update_Score(new_score);
+            }
+        } else if (rx_idx < 9) {
+            rx_str[rx_idx++] = rx;
         }
-
-        // 3. Check Game Buttons
-        Check_Matrix_Buttons();
-
-        __delay_ms(20); 
     }
 }
