@@ -9,17 +9,16 @@
 > **Department:** Computer Science and Information Engineering (CSIE)
 
 ## 📖 Abstract
-This project implements a **Cyber-Physical System (CPS)** game: "Whac-A-Mole". It integrates a **PIC18F4520 microcontroller** for hardware control (buttons, LEDs, motor) and a **Python-based GUI** for game logic, rendering, and audio processing. The system demonstrates bidirectional communication via **UART/Bluetooth (HC-05)**, ensuring low-latency synchronization between the physical controller and the digital game world.
+This project implements a **Cyber-Physical System (CPS)** game: "Whac-A-Mole". It integrates a **PIC18F4520 microcontroller** for hardware control (buttons, LEDs) and a **Python-based GUI** for game logic, rendering, and audio processing. The system demonstrates bidirectional communication via **UART/Bluetooth (HC-05)**, ensuring low-latency synchronization between the physical controller and the digital game world.
 
 ---
 
 ## 🌟 Key Features
 * **Bidirectional Communication:** Real-time synchronization between PC and MCU via UART (9600 baud).
-* **Hardware Interrupt Handling:** Efficient utilization of High-Priority Interrupts for UART reception, Timer0 (7-Seg scanning), and Timer1 (Servo PWM).
+* **Hardware Interrupt Handling:** Efficient utilization of High-Priority Interrupts for UART reception and Timer0 (7-Seg scanning).
 * **Dynamic Difficulty:** Game speed adjusts automatically based on the player's score and selected difficulty level.
-* **Visual & Haptic Feedback:**
-    * **7-Segment Display:** Shows current score.
-    * **Servo Motor:** Physically indicates game status (Sweep on Start, Hold on Pause, Reset on Stop).
+* **Visual Feedback:**
+    * **7-Segment Display:** Shows current score on the hardware controller.
     * **RGB LEDs:** Indicates system state (Green=Play, Yellow=Pause, Red=Menu).
 * **Robust GUI:** Built with `pygame`, featuring clean UI, animations, and background threading for connection stability.
 
@@ -32,7 +31,6 @@ This project implements a **Cyber-Physical System (CPS)** game: "Whac-A-Mole". I
 | Component | Pin Name | Pin Number | Function |
 | :--- | :--- | :--- | :--- |
 | **UART (Bluetooth)** | RC6 (TX) / RC7 (RX) | Pin 25 / 26 | Data transmission with PC |
-| **Servo Motor** | RE1 | Pin 9 | Status indicator (PWM controlled) |
 | **Game Buttons (0-7)** | PORTD (RD0-RD7) | Pin 19-22, 27-30 | Mole inputs (Active Low) |
 | **Game Button 8** | RE0 | Pin 8 | Mole input (Active Low) |
 | **Confirm Button** | RB0 (INT0) | Pin 33 | Menu confirmation / Pause |
@@ -45,7 +43,7 @@ This project implements a **Cyber-Physical System (CPS)** game: "Whac-A-Mole". I
 ### 2. Software Stack
 * **Firmware:** C (MPLAB X IDE, XC8 Compiler)
     * Utilizes `ISR` for non-blocking operations.
-    * Implements software PWM via `Timer1` for servo control.
+    * Handles 7-segment multiplexing via `Timer0`.
 * **Software:** Python 3.11
     * `pygame`: Rendering engine and input handling.
     * `pyserial`: Serial communication interface.
@@ -57,18 +55,24 @@ This project implements a **Cyber-Physical System (CPS)** game: "Whac-A-Mole". I
 
 ### Prerequisites
 * Python 3.8+
-* MPLAB X IDE (if modifying firmware)
-* PICkit 3/4 Programmer
+* MPLAB X IDE (to compile and flash firmware)
+* PICkit 3/4 Programmer (or compatible debugger)
 
 ### Step 1: Hardware Setup
 1.  Connect the **HC-05 Bluetooth module** to the PIC18F4520 (VCC=5V, GND=GND, TX->RC7, RX->RC6).
-2.  Connect the **Servo Motor** signal wire to RE1.
+2.  Connect Buttons, LEDs, and 7-Segment Display according to the Pin Map above.
 3.  Ensure the circuit is powered (5V).
 
-### Step 2: Software Setup
+### Step 2: Firmware Setup
+1.  Open the `firmware/` project in **MPLAB X IDE**.
+2.  Build the project using the **XC8 Compiler**.
+3.  Connect your **PICkit** to the microcontroller.
+4.  Click **Make and Program Device** to flash the code onto the PIC18F4520.
+
+### Step 3: Software Setup
 ```bash
 # Clone the repository
-git clone [https://github.com/rkkkloh/Embedded-Whac-A-Mol.git](https://github.com/rkkkloh/Embedded-Whac-A-Mol.git)
+git clone https://github.com/rkkkloh/Embedded-Whac-A-Mol.git
 
 # Navigate to the directory
 cd Embedded-Whac-A-Mol
